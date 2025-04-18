@@ -1,41 +1,47 @@
 const inputField = document.getElementById("input-field")
 const addBtn = document.getElementById("add-button")
 const addedTasksDiv = document.getElementById("added-items")
-const arrayOfTasks = []
+const arrayOfTasks = getArrayFromLocalStorage()
+
+arrayOfTasks.forEach(task => {
+    createDivOfTask(task)
+});
 
 function takeTaskPutInArray() {
     let task = inputField.value
-    arrayOfTasks.push({
+    let newTask = {
         id : Date.now(), 
         text : task,
         completed : false,
-    })
+    }
+    arrayOfTasks.push(newTask)
+    saveArrayIntoLocalStorage()
     console.log(arrayOfTasks)
     
 }
 function resetInputField() {
     inputField.value = ""
 }
-function createDivOfTask() {
+function createDivOfTask(task) {
     // Create Div That will Contain the New Task and its elements
     const newTaskDiv = document.createElement('div')
-    newTaskDiv.setAttribute("id", arrayOfTasks[arrayOfTasks.length - 1].id)
+    newTaskDiv.setAttribute("id", task.id)
     //Create CheckBox
     const checkBox = document.createElement('input')
     checkBox.setAttribute("type", "checkbox")
     checkBox.setAttribute("class", "checkbox")
-    checkBox.setAttribute("checkbox-id", arrayOfTasks[arrayOfTasks.length - 1].id)
+    checkBox.setAttribute("checkbox-id", task.id)
     newTaskDiv.appendChild(checkBox)
     // Create New Span that contains the Input
     const newTask = document.createElement('span')
-    newTask.innerHTML = arrayOfTasks[arrayOfTasks.length - 1].text
+    newTask.innerHTML = task.text
     newTaskDiv.appendChild(newTask)
     // Create Delete button
     const delBtn = document.createElement('button')
     delBtn.setAttribute("type", "button" )
     delBtn.innerHTML = "Delete"
     delBtn.setAttribute("class", "delete")
-    delBtn.setAttribute("data-task-id", arrayOfTasks[arrayOfTasks.length - 1].id)
+    delBtn.setAttribute("data-task-id", task.id)
     newTaskDiv.appendChild(delBtn)
     // Append Div with New Task to Parent Div
     addedTasksDiv.appendChild(newTaskDiv)
@@ -45,16 +51,16 @@ function createDivOfTask() {
         let divToComplete = document.getElementById(id)
         if (event.target.checked) {
             divToComplete.classList.add("completed")
-            const indexToChangeConditionInArray = arrayOfTasks.findIndex(task => task.id == id) 
+            const indexToChangeConditionInArray = arrayOfTasks.findIndex(t => t.id == id) 
             if (indexToChangeConditionInArray != -1) {
-                arrayOfTasks[indexToChangeConditionInArray].completed = true
+                task.completed = true
             }
             
         } else {
             divToComplete.classList.remove("completed")
-            const indexToChangeConditionInArray = arrayOfTasks.findIndex(task => task.id == id) 
+            const indexToChangeConditionInArray = arrayOfTasks.findIndex(t => t.id == id) 
             if (indexToChangeConditionInArray != -1) {
-                arrayOfTasks[indexToChangeConditionInArray].completed = false
+                task.completed = false
             }
         }        
     })
@@ -62,7 +68,7 @@ function createDivOfTask() {
 }
 addBtn.addEventListener("click", function () {
     takeTaskPutInArray()
-    createDivOfTask()
+    createDivOfTask(arrayOfTasks[arrayOfTasks.length - 1])
     resetInputField()   
 })
 addedTasksDiv.addEventListener("click", function(event){
@@ -80,6 +86,7 @@ addedTasksDiv.addEventListener("click", function(event){
             //Remove Task from Array
             arrayOfTasks.splice(indexToDeleteInArray, 1)
         }
+        saveArrayIntoLocalStorage()
     }
 })
 inputField.addEventListener("keypress", function(event) {
@@ -87,3 +94,14 @@ inputField.addEventListener("keypress", function(event) {
         addBtn.click();
     }
 });
+function saveArrayIntoLocalStorage() {
+    localStorage.setItem("tasks", JSON.stringify(arrayOfTasks))
+}
+function getArrayFromLocalStorage() {
+    let storedTask = localStorage.getItem("tasks")
+    if (storedTask) {
+        return JSON.parse(storedTask)
+    }else{
+        return []
+    }
+}
